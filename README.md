@@ -1,5 +1,14 @@
-# WindowDump
-![WindowDump](WindowDump.png)
+<div align="center">
+  <img src="WindowDump.png"  width="200"/>
+  <h1 align="center">WindowDump</h1>
+  <h4 align="center">Simple, Powerful Window Handles Dumper</h4>
+</div>
+
+<div align="center">
+  <a href="https://github.com/HiSkyZen/WindowDump"><img src="https://img.shields.io/github/stars/hiskyzen/windowdump.svg?logo=github&style=for-the-badge" alt="GitHub stars"></a>
+  <a href="https://github.com/HiSkyZen/WindowDump/releases/latest"><img src="https://img.shields.io/github/downloads/hiskyzen/windowdump/total.svg?style=for-the-badge&logo=github" alt="GitHub Releases"></a>
+</div>
+
 
 A small Windows utility that prints a **tree view of a process's window hierarchy** (top-level windows and their child windows), with powerful filtering and optional JSON export.
 
