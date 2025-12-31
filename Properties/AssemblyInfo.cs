@@ -6,11 +6,11 @@ using System.Runtime.InteropServices;
 // 제어됩니다. 어셈블리와 관련된 정보를 수정하려면
 // 이러한 특성 값을 변경하세요.
 [assembly: AssemblyTitle("WindowDump")]
-[assembly: AssemblyDescription("Dumping Window Handles of a Process")]
+[assembly: AssemblyDescription("Simple yet Powerful Window Handles Dumper")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("WindowDump")]
-[assembly: AssemblyCopyright("© HiSkyZen 2025")]
+[assembly: AssemblyCopyright("© HiSkyZen 2026")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -29,5 +29,5 @@ using System.Runtime.InteropServices;
 //      빌드 번호
 //      수정 버전
 //
-[assembly: AssemblyVersion("1.0.2505.0")]
-[assembly: AssemblyFileVersion("1.0.2505.0")]
+[assembly: AssemblyVersion("2.0.2601.0")]
+[assembly: AssemblyFileVersion("2.0.2601.0")]

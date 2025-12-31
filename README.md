@@ -1,76 +1,140 @@
 # WindowDump
+![WindowDump](WindowDump.png)
 
-A lightweight C# tool to enumerate the top-level and child window handles of a specific running process on Windows.  
-Useful for debugging UI behavior, automating window manipulation, or inspecting hidden window hierarchies.
+A small Windows utility that prints a **tree view of a process's window hierarchy** (top-level windows and their child windows), with powerful filtering and optional JSON export.
 
----
 
-## 🔧 Features
+## Features
 
-- Enumerates **top-level windows** of a given process  
-- Recursively lists all **child windows** under each top-level window  
-- Displays window handle in **both hexadecimal and decimal**  
-- Prints **class name** and **window title** of each window  
-- Accepts process name via **command-line argument**
+- **True window tree output** (parent → child → sibling traversal), not a flat child list
+- Target by **process name** *or* **PID**
+  - If multiple processes share the same name, they are **sorted by PID** (ascending) in both text and JSON output
+- Optional details (only shown when enabled)
+  - **Style / ExStyle** (`--style` / `-s`)
+  - **WindowRect / ClientRect** (`--rect` / `-r`)
+- Filters (filters keep the **ancestor path** to matched nodes)
+  - Visible windows only (`--visibleOnly` / `-v`)
+  - Minimum / maximum WindowRect size (`--minRect` / `-m`, `--maxRect` / `-x`)
+  - Class/title contains or regex filters
+- Optional **JSON output** (`--json` / `-j`)
+  - `--jsonFile` / `-o` writes JSON to a file (**requires `--json` / `-j`**)
+- Unicode or ASCII tree glyphs (`--ascii` / `-a`)
+- No external dependencies (JSON output uses an internal writer)
 
----
+## Requirements
 
-## 🖥️ Requirements
+- Windows (uses Win32 `user32.dll`)
+- C# **7.3** compatible build environment  
+  (e.g., Visual Studio with a .NET Framework project)
 
-- Windows 10/11  
-- .NET Framework 4.7.2 or higher (or use .NET Core with minimal adjustments)
+## Build
 
----
+Open the solution in Visual Studio and build, or compile `Program.cs` in your existing project.
 
-## 🚀 Usage
+> Note: The tool relies on Win32 APIs (`user32.dll`), so it must run on Windows.
+
+## Usage
 
 ```bash
-WindowDump.exe <processName>
+WindowDump <processName|pid> [options]
 ```
 
-### Example:
+You can also explicitly pass PID/name:
 
 ```bash
-WindowDump.exe AppleMusic
+WindowDump -p <pid> [options]
+WindowDump -n <processName> [options]
 ```
 
-or
+### Examples
+
+Target by PID, show only visible windows, filter by minimum size, and show rectangles:
 
 ```bash
-WindowDump.exe AppleMusic.exe
+WindowDump 1234 -v -m 200x100 -r
 ```
 
----
+Target by name (multiple processes will be handled and printed in PID order):
 
-## 📦 Output Example
-
-```
-Found Process: AppleMusic.exe (PID: 13508)
-
-=== Window Handle: 0x301926 (3146054) ===  
--- Child Windows of 0x301926 (3146054) --  
-Handle: 0x10FA3C (1113148) | ClassName: 'InputNonClientPointerSource' | Title: 'Non Client Input Sink Window'  
-Handle: 0x2E1A56 (3029590) | ClassName: 'Microsoft.UI.Content.DesktopChildSiteBridge' | Title: ''  
-Handle: 0x1914BE (1644990) | ClassName: 'InputSiteWindowClass' | Title: ''  
+```bash
+WindowDump notepad
 ```
 
----
+Print ASCII tree glyphs, show style/exstyle, and limit depth:
 
-## 📜 Notes
+```bash
+WindowDump notepad -a -s -d 6
+```
 
-- If the process is not found, the tool will inform you and exit.  
-- You can provide the process name **with or without** `.exe` extension.  
-- If multiple processes with the same name exist, it handles **all of them**.
+Export JSON to stdout:
 
----
+```bash
+WindowDump notepad -j
+```
 
-## 🛠️ Build Instructions
+Export JSON to a file (**`-o` requires `-j`**):
 
-1. Open the `WindowDump.sln` file in Visual Studio  
-2. Build with any config and Enjoy!
+```bash
+WindowDump notepad -j -o tree.json
+```
 
----
+## Options
 
-## 🪛 License
+### Target selection
+- `--pid=PID`, `-p PID`  
+  Target a specific PID (you can also pass PID as the positional argument)
+- `--name=NAME`, `-n NAME`  
+  Target a process name (you can also pass the name as the positional argument)
 
-This project is released under the MIT License.
+### Tree / enumeration
+- `--maxDepth=N`, `-d N`  
+  Max tree depth (default: unlimited)
+- `--ascii`, `-a`  
+  Use ASCII tree glyphs instead of Unicode
+- `--childPidOnly`, `-P`  
+  Only enumerate child windows owned by the same PID (useful when hosted windows belong to other processes)
+
+### Filters (ancestor path is preserved)
+- `--visibleOnly`, `-v`  
+  Match visible windows only
+- `--minRect=WxH`, `-m WxH`  
+  Minimum **WindowRect** size (e.g., `800x600`)
+- `--maxRect=WxH`, `-x WxH`  
+  Maximum **WindowRect** size (e.g., `1920x1080`)
+- `--classContains=TEXT`, `-c TEXT`  
+  Class name contains filter
+- `--titleContains=TEXT`, `-t TEXT`  
+  Window title contains filter
+- `--classRegex=REGEX`, `-C REGEX`  
+  Class name regex filter
+- `--titleRegex=REGEX`, `-T REGEX`  
+  Window title regex filter
+
+### Optional output fields (only shown when enabled)
+- `--style`, `-s`  
+  Show `Style` / `ExStyle`
+- `--rect`, `-r`  
+  Show `WindowRect` and `ClientRect`
+
+### JSON
+- `--json`, `-j`  
+  Output JSON (to stdout, or use `-o`)
+- `--jsonFile=PATH`, `-o PATH`  
+  Write JSON to a file (**must be used with `--json` / `-j`**)
+
+### Short option bundles
+
+Flag-only short options can be bundled, e.g.:
+
+```bash
+WindowDump -p 1234 -avsrjP -o tree.json
+```
+
+Bundling is supported for flags: `-a -v -s -r -j -P`  
+Options that require a value (`-d -m -x -c -t -C -T -o -p -n`) **cannot** be bundled.
+
+## Notes
+
+- `--minRect` / `--maxRect` are based on **WindowRect** (screen coordinates size), not ClientRect.
+- Filtering is **pruning-based**: nodes are kept if they match filters **or** have descendants that match.
+- Unicode tree glyphs look best in Windows Terminal / modern consoles. Use `--ascii` if glyphs appear broken.
